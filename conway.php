@@ -14,7 +14,7 @@ class conway
 		$this->grid = $this->initializeGrid();
 	}
 
-	private function initializeGrid()
+	private function initializeGrid($random = true)
 	{
 		$grid = [];
 
@@ -22,7 +22,7 @@ class conway
 		{
 			for($j = 0; $j < $this->cols; $j++)
 			{
-				$grid[$i][$j] = 0;
+				$grid[$i][$j] = $random === true?rand(0,1):0;
 			}
 		}
 
@@ -101,7 +101,7 @@ class conway
 			 $this->grid = $oldGrid;
 		}
 
-		$newGrid = $this->initializeGrid();
+		$newGrid = $this->initializeGrid(false);
 
 		for($i = 0; $i < $this->rows; $i++)
 		{
@@ -125,9 +125,27 @@ class conway
 
 		return $newGrid;
 	}
+
+    public function getNumOfLiveCells()
+    {
+        $numOfLiveCels = 0;
+
+        for($i = 0; $i < $this->rows; $i++) {
+            for ($j = 0; $j < $this->cols; $j++) {
+                $val = $this->grid[$i][$j];
+
+                if($val === 1)
+                {
+                    $numOfLiveCels++;
+                }
+            }
+        }
+
+        return $numOfLiveCels;
+    }
 }
 
-$conway = new conway(4,4);
+/*$conway = new conway(4,4);
 //echo $conway->showGrid();
 //echo "\r\n";
 $conway->addLiveCell(0,2);
@@ -143,11 +161,31 @@ $newGrid = $conway->iterateGrid();
 echo $conway->showGrid($newGrid);
 echo "\r\n";
 
-$existingGrid = $conway->getGrid();
+$existingGrid = $conway->getGrid();*/
 
-for ($i =0; $i <10; $i++)
-{
-	$existingGrid = $conway->iterateGrid($existingGrid);
-	echo $conway->showGrid($existingGrid) . "\r\n";
-	sleep(2);
+$perfectGrid = [];
+$maxLivCels = 0;
+
+for($k = 0; $k < 2; $k++) {
+
+    $conway = new conway(100, 100);
+    $existingGrid = $conway->getGrid();
+
+    echo $k . "\r";
+    for ($i = 0; $i < 1000; $i++) {
+
+        $existingGrid = $conway->iterateGrid($existingGrid);
+        $numOfLiveCells = $conway->getNumOfLiveCells();
+        //echo $conway->showGrid($existingGrid) . "\r\n";
+        //sleep(2);
+
+        if($numOfLiveCells > $maxLivCels)
+        {
+            $maxLivCels = $numOfLiveCells;
+            $perfectGrid = $existingGrid;
+        }
+    }
 }
+file_put_contents(dirname(__FILE__) . '/results/r-' . time() . '.txt', $maxLivCels . "\r\n" . var_export($perfectGrid));
+echo $maxLivCels . "\r\n";
+echo $conway->showGrid($perfectGrid) . "\r\n";
