@@ -14,8 +14,20 @@ class conway
 		$this->grid = $this->initializeGrid();
 	}
 
+	private function getRand()
+	{
+		$rand = (float)rand()/(float)getrandmax();
+		if ($rand < 0.4)
+			return 0;
+		else
+			return 1;
+	}
+
 	private function initializeGrid($random = true)
 	{
+		//$colGrid = array_fill(0,$this->cols, ($random === true?$this->getRand():0));
+		//$grid = array_fill(0,$this->rows, $colGrid);
+
 		$grid = [];
 
 		for($i = 0; $i < $this->rows; $i++)
@@ -43,16 +55,9 @@ class conway
 
 		$showGrid = '';
 
-		for($i = 0; $i < $this->rows; $i++)
+		foreach($grid as $rows)
 		{
-			$showRow = '';
-
-			for($j = 0; $j < $this->cols; $j++)
-			{
-				$showRow .= $grid[$i][$j];
-			}
-
-			$showGrid .= $showRow . "\n";
+			$showGrid .= implode('', $rows);
 		}
 
 		return $showGrid;
@@ -103,89 +108,80 @@ class conway
 
 		$newGrid = $this->initializeGrid(false);
 
-		for($i = 0; $i < $this->rows; $i++)
-		{
-			for($j =0; $j < $this->cols; $j++)
-			{
-				$val = $this->grid[$i][$j];
+        foreach($this->grid as $i => $rows)
+        {
+            foreach($rows as $j => $val)
+            {
+                $cellNumNeigh = $this->getAround($i, $j);
 
-				$cellNumNeigh = $this->getAround($i, $j);
+                if($cellNumNeigh === 3)
+                {
+                    $newGrid[$i][$j] = 1;
+                }
 
-				if($cellNumNeigh === 3)
-				{
-					$newGrid[$i][$j] = 1;
-				}
-
-				if($cellNumNeigh === 2 && $val === 1)
-				{
-					$newGrid[$i][$j] = 1;
-				}
-			}
-		}
+                if($cellNumNeigh === 2 && $val === 1)
+                {
+                    $newGrid[$i][$j] = 1;
+                }
+            }
+        }
 
 		return $newGrid;
 	}
 
-    public function getNumOfLiveCells()
+    public function getNumOfLiveCells($grid = null)
     {
+		if(is_null($grid))
+		{
+			$grid = $this->grid;
+		}
+
         $numOfLiveCels = 0;
 
-        for($i = 0; $i < $this->rows; $i++) {
-            for ($j = 0; $j < $this->cols; $j++) {
-                $val = $this->grid[$i][$j];
-
-                if($val === 1)
-                {
-                    $numOfLiveCels++;
-                }
-            }
-        }
+		foreach($grid as $i => $rows)
+		{
+			$numOfLiveCels += array_sum($rows);
+		}
 
         return $numOfLiveCels;
     }
 }
 
-/*$conway = new conway(4,4);
-//echo $conway->showGrid();
-//echo "\r\n";
-$conway->addLiveCell(0,2);
-$conway->addLiveCell(1,1);
-$conway->addLiveCell(1,2);
-$conway->addLiveCell(1,3);
-echo $conway->showGrid();
-echo "\r\n";
-//echo $conway->getAround(2,1) . "\r\n";
-//echo $conway->getAround(2,1) . "\r\n";
-
-$newGrid = $conway->iterateGrid();
-echo $conway->showGrid($newGrid);
-echo "\r\n";
-
-$existingGrid = $conway->getGrid();*/
-
+$startPerfectGrid = [];
 $perfectGrid = [];
-$maxLivCels = 0;
+$maxLiveCels = 0;
 
-for($k = 0; $k < 2; $k++) {
-
+for($k = 0; $k < 2; $k++)
+{
     $conway = new conway(100, 100);
-    $existingGrid = $conway->getGrid();
+    $startGrid = $conway->getGrid();
 
-    echo $k . "\r";
-    for ($i = 0; $i < 1000; $i++) {
+    //echo $k . "\r";
+    for ($i = 0; $i < 1000; $i++)
+	{
+		if($i === 0)
+		{
+			$existingGrid = $startGrid;
+		}
+        echo $k . '.' . $i . "\r";
 
         $existingGrid = $conway->iterateGrid($existingGrid);
-        $numOfLiveCells = $conway->getNumOfLiveCells();
+        $numOfLiveCells = $conway->getNumOfLiveCells($existingGrid);
         //echo $conway->showGrid($existingGrid) . "\r\n";
         //sleep(2);
 
-        if($numOfLiveCells > $maxLivCels)
+        if($numOfLiveCells > $maxLiveCels)
         {
-            $maxLivCels = $numOfLiveCells;
+			$maxLiveCels = $numOfLiveCells;
             $perfectGrid = $existingGrid;
+			$startPerfectGrid = $startGrid;
         }
     }
 }
-file_put_contents(dirname(__FILE__) . '/results/r-' . time() . '.txt', $maxLivCels . "\r\n" . var_export($perfectGrid));
-echo $maxLivCels . "\r\n";
+
+file_put_contents(dirname(__FILE__) . '/results/r-' . time() . '.txt', $maxLiveCels . "\r\n" . print_r($perfectGrid, true) . "\r\n" . print_r($startPerfectGrid, true));
+echo 'result maxLive: ' . $maxLiveCels . "\r\n";
+echo 'Initial: ' . "\n";
+echo $conway->showGrid($startPerfectGrid) . "\r\n";
+echo 'Result: ' . "\n";
 echo $conway->showGrid($perfectGrid) . "\r\n";
