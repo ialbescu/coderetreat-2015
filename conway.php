@@ -23,6 +23,14 @@ class conway
 			return 1;
 	}
 
+	private function getRandom()
+	{
+		$array = [0,0,0,0,0,1];
+		$randKey = rand(0, (count($array))-1);
+
+		return $array[$randKey];
+	}
+
 	private function initializeGrid($random = true)
 	{
 		//$colGrid = array_fill(0,$this->cols, ($random === true?$this->getRand():0));
@@ -34,7 +42,8 @@ class conway
 		{
 			for($j = 0; $j < $this->cols; $j++)
 			{
-				$grid[$i][$j] = $random === true?rand(0,1):0;
+				//$grid[$i][$j] = $random === true?rand(0,1):0;
+				$grid[$i][$j] = $random === true?$this->getRandom():0;
 			}
 		}
 
